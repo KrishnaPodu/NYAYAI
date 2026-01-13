@@ -6,3 +6,8 @@ pymupdf
 opencv-python
 ultralytics
 python-dotenv
+pytesseract
+pdf2image
+easyocr  # Better for Hindi/Marathi/Tamil than Tesseract
+opencv-python-headless # For image manipulation
+img2table # Specialized for borderless Indian tables

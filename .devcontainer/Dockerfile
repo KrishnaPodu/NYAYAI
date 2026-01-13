@@ -10,6 +10,13 @@ RUN apt-get update && apt-get install -y \
     git \
     && rm -rf /var/lib/apt/lists/*
 
+# Add Hindi support for Tesseract
+RUN apt-get update && apt-get install -y \
+    tesseract-ocr-hin \
+    tesseract-ocr-eng \
+    poppler-utils \
+    libgl1 # Required for OpenCV
+
 WORKDIR /workspaces/NyayAI
 
 # Create a dummy requirements file so the build doesn't fail
