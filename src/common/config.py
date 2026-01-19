@@ -36,4 +36,4 @@ LANGUAGES = ["hi", "en"]
 USE_GPU = True
 
 # Hard limit to avoid pathological PDFs
-MAX_PDF_PAGES = 2000 # max pages in input PDF, cnan be adjusted as needed
+MAX_PDF_PAGES = 2000 # max pages in input PDF, can be adjusted as needed
