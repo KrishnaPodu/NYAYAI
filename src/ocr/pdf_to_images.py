@@ -48,7 +48,7 @@ def pdf_to_images(pdf_path: Path, out_dir: Path) -> List[Path]:
         "-png",
         pdf_path.as_posix(),
         prefix.as_posix(),
-    ]
+    ] # so basically this is the command that will be run to convert pdf to images and it will store them in the out_dir, which will then be returned as a list of paths
 
     # -------- subprocess execution --------
 
@@ -56,9 +56,9 @@ def pdf_to_images(pdf_path: Path, out_dir: Path) -> List[Path]:
         result = subprocess.run(
             cmd,
             check=True,
-            timeout=120,  # safer default for large PDFs
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.PIPE,
+            timeout=120,  # safer default for large PDFs ,subprocess kills the process
+            stdout=subprocess.DEVNULL, #no log printing
+            stderr=subprocess.PIPE, #capture stderr for error messages
         )
 
     except FileNotFoundError:
