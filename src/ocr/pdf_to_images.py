@@ -54,15 +54,22 @@ def pdf_to_images(pdf_path: Path, out_dir: Path) -> List[Path]:
     ] # so basically this is the command that will be run to convert pdf to images and it will store them in the out_dir, which will then be returned as a list of paths
 
     # -------- subprocess execution --------
-
     try:
-        result = subprocess.run(
-            cmd,
-            check=True, #Raises a subprocess.CalledProcessError.
-            timeout=120,  # safer default for large PDFs ,subprocess kills the process (time in seconds)
-            stdout=subprocess.DEVNULL, #no log printing
-            stderr=subprocess.PIPE, #capture stderr for error messages
-        )
+    # Open the log file in append mode ('a') 
+    # Use 'w' if you want to overwrite the log every time the script runs
+        with open(log_path, "a") as log_file:
+            # Write a timestamp or separator for clarity
+            print("Running pdftoppm command:")
+            log_file.write(f"\n--- Running pdftoppm for {pdf_path.name} ---\n")
+            log_file.flush() # Ensure header is written immediately
+
+            result = subprocess.run(
+                cmd,
+                check=True,
+                timeout=120,
+                stdout=log_file, # Redirect stdout to the file
+                stderr=subprocess.STDOUT,   # Redirect stderr to stdout (so it also goes to the file)
+            )
 
     except FileNotFoundError:
         raise RuntimeError(

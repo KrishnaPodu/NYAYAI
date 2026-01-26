@@ -179,7 +179,7 @@ class OCRPipeline:
                 continue
 
 
-            out = out_dir / page.image_path.name
+            out = out_dir / page.image_path.name # preprocessed image path
 
             if out.exists():
                 page.preprocessed_path = out
@@ -248,7 +248,7 @@ if __name__ == "__main__":
     import sys
 
     if len(sys.argv) < 2:
-        print("Usage: python -m src.ocr.pipeline <path-to-pdf-or-image>")
+        print("Usage: python -m src.ocr.pipeline data/raw/doc1.pdf")
         sys.exit(1)
 
     input_path = sys.argv[1]
