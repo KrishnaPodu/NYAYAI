@@ -42,7 +42,7 @@ class Page:
     page_no: int
 
     image_path: Path
-    preprocessed_path: Optional[Path] = None
+    preprocessed_path: Optional[Path] = None  # these are used in preprocess -> ocr.
 
     layout: Optional[List[Dict]] = None
     ocr_blocks: Optional[List[Dict]] = None
@@ -196,7 +196,7 @@ class OCRPipeline:
         out_dir.mkdir(exist_ok=True)
 
         for page in doc.pages.values():
-            if page.failed or page.text_layer is not None:
+            if page.failed or page.text_layer is not None: #IF THE PAGE ALREADY HAS A TEXT LAYER, SKIP PREPROCESSING.
                 continue
 
 
