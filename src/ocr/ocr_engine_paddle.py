@@ -1,4 +1,5 @@
 from pathlib import Path
+from unittest import result
 from paddleocr import PaddleOCR
 from typing import Optional, List, Dict
 from src.common.config import USE_GPU, LANGUAGES
@@ -23,6 +24,8 @@ def _get_engine() -> PaddleOCR:
                 use_gpu=True,
                 lang=lang,
             )
+
+            print("PaddleOCR running on GPU during ocr")
             return _engine
         except Exception as e:
             print(f"[WARN] GPU OCR init failed, falling back to CPU: {e}")
@@ -33,6 +36,7 @@ def _get_engine() -> PaddleOCR:
         use_gpu=False,
         lang=lang,
     )
+
     print(
     "[INFO] PaddleOCR running on ","GPU" if _engine.use_gpu else "CPU"
     )
@@ -60,13 +64,36 @@ def run_ocr(image_path: Path, regions=None) -> List[Dict]:
     blocks: List[Dict] = []
 
     if not result:
+        print("no result during ocr")
         return blocks
 
     for item in result:
-        text, confidence = item[1]
-        blocks.append({
-            "text": text,
-            "confidence": float(confidence)
-        })
+        try:
+            text, confidence = item[1]
+
+            # Unwrap weird PaddleOCR shapes
+            if isinstance(text, (tuple, list)):
+                text = text[0]
+
+            if isinstance(confidence, (tuple, list)):
+                confidence = confidence[0]
+
+            text = str(text).strip()
+            confidence = float(confidence)
+
+            print("hi")
+            print(text, confidence)
+
+            if not text:
+                continue
+            blocks.append({
+                "text": text,
+                "confidence": confidence
+            })
+
+        except Exception:
+            # Skip malformed OCR entries
+            continue
+
 
     return blocks
