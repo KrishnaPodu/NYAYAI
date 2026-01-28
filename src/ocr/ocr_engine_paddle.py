@@ -52,48 +52,46 @@ def _get_engine() -> PaddleOCR:
 def run_ocr(image_path: Path, regions=None) -> List[Dict]:
     """
     Run OCR on a single image.
-
     This function assumes the caller has already decided
     that OCR is actually needed.
     """
 
     engine = _get_engine()
+    # print("running ocr")
 
     result = engine.ocr(str(image_path), cls=True)
 
     blocks: List[Dict] = []
 
     if not result:
-        print("no result during ocr")
         return blocks
 
-    for item in result:
-        try:
-            text, confidence = item[1]
+    # PaddleOCR returns: [ [ [box, (text, conf)], ... ] ]
+    for page in result:
+        for item in page:
+            try:
+                box, (text, confidence) = item
 
-            # Unwrap weird PaddleOCR shapes
-            if isinstance(text, (tuple, list)):
-                text = text[0]
+                # Normalize shapes
+                if isinstance(text, (tuple, list)):
+                    text = text[0]
 
-            if isinstance(confidence, (tuple, list)):
-                confidence = confidence[0]
+                if isinstance(confidence, (tuple, list)):
+                    confidence = confidence[0]
 
-            text = str(text).strip()
-            confidence = float(confidence)
+                text = str(text).strip()
+                confidence = float(confidence)
 
-            print("hi")
-            print(text, confidence)
+                if not text:
+                    continue
 
-            if not text:
+                blocks.append({
+                    "text": text,
+                    "confidence": confidence
+                })
+
+            except Exception:
                 continue
-            blocks.append({
-                "text": text,
-                "confidence": confidence
-            })
-
-        except Exception:
-            # Skip malformed OCR entries
-            continue
-
 
     return blocks
+
