@@ -1,27 +1,58 @@
-FROM python:3.10-slim
+# -------------------------------
+# Base Image (CUDA 11.8 + cuDNN 8 Devel)
+# -------------------------------
+FROM nvidia/cuda:11.8.0-cudnn8-devel-ubuntu22.04
 
-# Install System Dependencies
-# We use libgl1 instead of libgl1-mesa-glx for modern Debian compatibility
-RUN apt-get update && apt-get install -y \
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+# Consolidated Library Paths
+ENV CUDA_HOME=/usr/local/cuda
+ENV LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:/usr/local/cuda/lib64:/usr/local/cuda/extras/CUPTI/lib64:$LD_LIBRARY_PATH
+
+# -------------------------------
+# System Dependencies
+# -------------------------------
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3.10 \
+    python3-pip \
+    python3-dev \
+    git \
+    curl \
+    tesseract-ocr \
+    tesseract-ocr-eng \
+    tesseract-ocr-hin \
+    poppler-utils \
+    libleptonica-dev \
     libgl1 \
     libglib2.0-0 \
-    tesseract-ocr \
-    poppler-utils \
-    git \
+    libsm6 \
+    libxext6 \
+    libxrender1 \
+    ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-# Add Hindi support for Tesseract
-RUN apt-get update && apt-get install -y \
-    tesseract-ocr-hin \
-    tesseract-ocr-eng \
-    poppler-utils \
-    libgl1 # Required for OpenCV
+# Fix: Symlink cuDNN so Paddle finds the generic .so name
+RUN ln -s /usr/lib/x86_64-linux-gnu/libcudnn.so.8 /usr/local/cuda/lib64/libcudnn.so
+
+# Make python default
+RUN ln -s /usr/bin/python3 /usr/bin/python
 
 WORKDIR /workspaces/NyayAI
 
-# Create a dummy requirements file so the build doesn't fail
-RUN touch requirements.txt
+# -------------------------------
+# Python Dependencies
+# -------------------------------
+COPY requirements.txt .
 
-# Install Python Libraries
-RUN pip install --no-cache-dir torch torchvision --index-url https://download.pytorch.org/whl/cpu
-RUN pip install --no-cache-dir transformers langchain chromadb easyocr pymupdf opencv-python ultralytics python-dotenv
+RUN python -m pip install --upgrade pip \
+    && pip install --no-cache-dir paddlepaddle-gpu==2.6.1.post118 \
+       -f https://www.paddlepaddle.org.cn/whl/linux/mkl/avx/stable.html \
+    && pip install --no-cache-dir -r requirements.txt
+
+# -------------------------------
+# Application Code
+# -------------------------------
+COPY . .
+
+CMD ["sleep", "infinity"]
